@@ -15,19 +15,13 @@ res1=$(date +%s.%N)
 
 # Reading mode
 if [ ! -z $MODE ]; then
-    if [ $MODE == "r" ] || [ $MODE == "cr" ]; then
-        echo -e "${bldblu}Set release build flag ${txtrst}"
-        export IS_RELEASED_BUILD=true
-    else
-        export IS_RELEASED_BUILD=
-    fi
-
-    if [ $MODE == "c" ] || [ $MODE == "cr" ]; then
+    if [ $MODE == "c" ]; then
        echo -e "${bldblu}Cleaning up out folder ${txtrst}"
        make clobber;
     fi
 else
-    export IS_RELEASED_BUILD=
+	echo -e "${bldblu}Dirty Clean up out folder ${txtrst}"
+        make installclean
 fi
 
 # Setup environment
@@ -38,18 +32,15 @@ echo -e "${bldblu}Setting up build environment ${txtrst}"
 export USE_CCACHE=1
 /usr/bin/ccache -M 50G
 
-# For building recovery
-export BUILDING_RECOVERY=false
+# GRADLE APPS SKIP
+export SKIP_GRADLE_APP_BUILDS=true
 
 # Prebuilt chromium
 export USE_PREBUILT_CHROMIUM=1
 
-# Fix common out folder not being a common
-export ANDROID_FIXUP_COMMON_OUT=true
-
 # Lunch device
 echo -e "${bldblu}Lunching device... ${txtrst}"
-lunch "slim_$DEVICE-userdebug"
+lunch "nameless_$DEVICE-userdebug"
 
 # Remove previous build info
 echo -e "${bldblu}Removing previous build.prop ${txtrst}"
