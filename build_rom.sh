@@ -13,6 +13,28 @@ MODE="$2"
 # Time of build startup
 res1=$(date +%s.%N)
 
+# Setup environment
+echo -e "${bldblu}Setting up build environment ${txtrst}"
+. build/envsetup.sh
+
+# Setup ccache
+export USE_CCACHE=1
+/usr/bin/ccache -M 25G
+
+# GRADLE APPS SKIP (NAMELESS_ROM)
+export SKIP_GRADLE_APP_BUILDS=true
+
+# Prebuilt chromium
+export USE_PREBUILT_CHROMIUM=1
+
+# Lunch device
+echo -e "${bldblu}Lunching device... ${txtrst}"
+lunch "cm_$DEVICE-userdebug"
+
+# Remove previous build info
+echo -e "${bldblu}Removing previous build.prop ${txtrst}"
+rm $OUT/system/build.prop;
+
 # Reading mode
 if [ ! -z $MODE ]; then
     if [ $MODE == "c" ]; then
@@ -24,32 +46,11 @@ else
         make installclean
 fi
 
-# Setup environment
-echo -e "${bldblu}Setting up build environment ${txtrst}"
-. build/envsetup.sh
-
-# Setup ccache
-export USE_CCACHE=1
-/usr/bin/ccache -M 50G
-
-# GRADLE APPS SKIP
-export SKIP_GRADLE_APP_BUILDS=true
-
-# Prebuilt chromium
-export USE_PREBUILT_CHROMIUM=1
-
-# Lunch device
-echo -e "${bldblu}Lunching device... ${txtrst}"
-lunch "nameless_$DEVICE-userdebug"
-
-# Remove previous build info
-echo -e "${bldblu}Removing previous build.prop ${txtrst}"
-rm $OUT/system/build.prop;
-
 # Start compilation
 echo -e "${bldblu}Starting build for $DEVICE ${txtrst}"
-mka bacon
+brunch $DEVICE
 
 # Get elapsed time
 res2=$(date +%s.%N)
 echo "${bldgrn}Total time elapsed: ${txtrst}${grn}$(echo "($res2 - $res1) / 60"|bc ) minutes ($(echo "$res2 - $res1"|bc ) seconds) ${txtrst}"
+
